@@ -1,0 +1,98 @@
+// QTreeNode(nw,ne,sw,se);
+// QTreeLeaf(val);
+
+sum(ret, size) >< QTreeNode(nw,ne,sw,se) => 
+  Add(ret, lhsret)~rhsret,
+  Add(lhsret, nwsum)~nesum,
+  Add(rhsret, swsum)~sesum,
+  halfsize << Div(size, 2),
+  Dup(thalfsize1, thalfsize2) ~ halfsize,
+  Dup(halfsize1, halfsize2) ~ thalfsize1,
+  Dup(halfsize3, halfsize4) ~ thalfsize2,
+  sum(nwsum, halfsize1)~nw,
+  sum(nesum, halfsize2)~ne,
+  sum(swsum, halfsize3)~sw,
+  sum(sesum, halfsize4)~se;
+
+sum(ret, size) >< QTreeLeaf(val) =>
+  Mul(ret, val)~area,
+  Mul(area, size1)~size2,
+  Dup(size1, size2)~size;
+
+
+
+If(r, true_branch, false_branch) >< True => r~true_branch, Eraser~false_branch;
+If(r, true_branch, false_branch) >< False => r~false_branch, Eraser~true_branch;
+
+IsZero(r) >< Z => r~True;
+IsZero(r) >< int x 
+  | x == 0 => r~True
+  | _ => r~False;
+IsZero(r) >< x => x~Eraser, r~False;
+
+Boolean(r) >< True => r~1;
+Boolean(r) >< False => r~0;
+
+Eq(r, x) >< int y =>
+  EqBoth(r, y) ~ x;
+
+EqBoth(r, int x) >< int y
+  | x == y => r~True
+  | _ => r~False;
+
+
+Eq(r, left) >< QTreeLeaf(int val) =>
+  Eq(r, val)~left;
+EqBoth(r, int left_val) >< QTreeLeaf(int right_val)
+  | left_val == right_val => r~True
+  | _ => r~False;
+
+
+Val(r) >< QTreeLeaf(x) => r~x;
+
+
+Eq4(r, x1, x2, x3) >< x4 => 
+  Eraser~(x1,x2,x3,x4),
+  r~False;
+Eq4(r, x1, x2, x3) >< QTreeLeaf(int x4) =>
+  Eq4_1(r, x4, x1, x2) ~ x3;
+
+Eq4_1(r, x1, x2, x3) >< x4 => 
+  Eraser~(x1, x2, x3, x4),
+  r~False;
+Eq4_1(r, int x1, x2, x3) >< QTreeLeaf(int x4) =>
+  Eq4_2(r, x4, x1, x2) ~ x3;
+
+Eq4_2(r, x1, x2, x3) >< x4 =>
+  Eraser~(x1, x2, x3, x4),
+  r~False;
+Eq4_2(r, int x1, int x2, x3) >< QTreeLeaf(int x4) =>
+  Eq4_3(r, x4, x1, x2) ~ x3;
+
+Eq4_3(r, x1, x2, x3) >< x4 =>
+  Eraser~(x1, x2, x3, x4),
+  r~False;
+Eq4_3(r, int x1, int x2, int x3) >< QTreeLeaf(int x4)
+  | (x1 == x2) and (x2 == x3) and (x3 == x4) => r~True
+  | _ => r~False;
+
+
+MkNode(r, nw, ne, sw) >< se =>
+  Dup((nw1r, ne1, sw1, se1), (nw2, ne2, sw2, se2)) ~ (nw, ne, sw, se),
+  Dup(nw1, nw3) ~ nw1r,
+  Eq4(areEqual, nw1, ne1, sw1) ~ se1,
+  If(r, nw3, QTreeNode(nw2, ne2, sw2, se2)) ~ areEqual;
+
+
+// QTreeMap2(r, f, QTreeNode(nw1, ne1, sw1, se1)) >< (QTreeNode(nw2, ne2, sw2, se2)) =>
+//   Dup(_f1, _f2)~f,
+//   Dup(f1, f2)~_f1,
+//   Dup(f3, f4)~_f2,
+//   QTreeMap2(nw, f1)~(nw1, nw2),
+//   QTreeMap2(ne, f2)~(ne1, ne2),
+//   QTreeMap2(sw, f3)~(sw1, sw2),
+//   QTreeMap2(se, f4)~(se1, se2),
+//   r~MkNode(nw, ne, sw, se);
+
+
+
