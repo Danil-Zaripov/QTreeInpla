@@ -1,0 +1,108 @@
+use "./src/linear_algebra.in";
+
+op_add(r) >< (x,y) =>
+  r << Add(x,y);
+op_mul(r) >< (x,y) =>
+  r << Mul(x,y);
+
+MultScalar(r, %op_add, 4) ~ 4;
+r; free r;
+
+QTreeMultiplication(r, %op_add, %op_mul, 4, QTreeLeaf(1)) ~ QTreeLeaf(2);
+
+r; free r;
+
+// Expanding mxm
+//
+// 3 x 2
+// 1 0 0 0
+// 0 2 0 0
+// 3 0 0 0
+// 0 0 0 0
+
+tree1 ~ QTreeNode(
+  QTreeNode(
+    QTreeLeaf(1),
+    QTreeLeaf(0),
+    QTreeLeaf(0),
+    QTreeLeaf(2)
+  ),
+  QTreeLeaf(0),
+  QTreeNode(
+    QTreeLeaf(3),
+    QTreeLeaf(0),
+    QTreeLeaf(0),
+    QTreeLeaf(0)
+  ),
+  QTreeLeaf(0)
+);
+
+// 2 x 3
+// 4 5 6 0
+// 0 0 0 0
+// 0 0 0 0
+// 0 0 0 0
+tree2 ~ QTreeNode(
+  QTreeNode(
+    QTreeLeaf(4),
+    QTreeLeaf(5),
+    QTreeLeaf(0),
+    QTreeLeaf(0)
+  ),
+  QTreeNode(
+    QTreeLeaf(6),
+    QTreeLeaf(0),
+    QTreeLeaf(0),
+    QTreeLeaf(0)
+  ),
+  QTreeLeaf(0),
+  QTreeLeaf(0)
+);
+
+QTreeMultiplication(r, %op_add, %op_mul, 4, tree1) ~ tree2;
+r ~ Dup(r2, r3);
+sum(r1, 4) ~ r2;
+r3 r1; free r tree1 tree2;
+
+
+// 1 0 0 0
+// 0 1 0 0
+// 0 0 1 0
+// 0 0 0 1
+
+tree1 ~ QTreeNode(
+  QTreeNode(
+    QTreeLeaf(1),
+    QTreeLeaf(0),
+    QTreeLeaf(0),
+    QTreeLeaf(1)
+  ),
+  QTreeLeaf(0),
+  QTreeNode(
+    QTreeLeaf(1),
+    QTreeLeaf(0),
+    QTreeLeaf(0),
+    QTreeLeaf(1)
+  ),
+  QTreeLeaf(0)
+);
+
+tree2 ~ QTreeNode(
+  QTreeNode(
+    QTreeLeaf(1),
+    QTreeLeaf(0),
+    QTreeLeaf(0),
+    QTreeLeaf(1)
+  ),
+  QTreeLeaf(0),
+  QTreeNode(
+    QTreeLeaf(1),
+    QTreeLeaf(0),
+    QTreeLeaf(0),
+    QTreeLeaf(1)
+  ),
+  QTreeLeaf(0)
+);
+
+QTreeMultiplication(r, %op_add, %op_mul, 4, tree1) ~ tree2;
+r; free r tree1 tree2;

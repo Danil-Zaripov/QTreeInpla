@@ -1,15 +1,15 @@
 length(r) >< [] => r~0;
-length(r) >< x:xs => 
+length(r) >< x:xs =>
   Eraser~x,
   xs~length(cnt),
   r << Add(cnt, 1);
 
-listZip(r, xs) >< ys => 
+listZip(r, xs) >< ys =>
   listZipW(r, xs)~ys;
 
 listZipW(r, xs) >< [] => r~[], Eraser~xs;
 listZipW(r, xxs) >< y:ys =>
-  r~(wx, wy):ws, 
+  r~(wx, wy):ws,
   (wx, wy, rys)~w,
   deconsZip(w, xs, ys, y)~xxs,
   listZipW(ws, xs)~rys;

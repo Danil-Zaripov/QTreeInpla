@@ -1,0 +1,92 @@
+use "./src/matrix.in";
+
+// op_add example:
+// op_add(r) >< (x, y) =>
+//   r << Add(x, y);
+
+// This *function* doesn't check
+// if size is a power of 2
+// but assumes it
+MultScalar(r, op_add, x) >< int size
+  | size == 1 => r ~ x, Eraser ~ op_add
+  | _ =>
+    halfSize << Div(size, 2),
+    op_add ~ Dup(op_add1, op_add2),
+    v << MultScalar(op_add1, x, halfSize),
+    v ~ Dup(v1, v2),
+    op_add2 ~ (r, (v1, v2));
+
+
+
+// Whenever in the lhs we got QTreeLeaf(val2), and we have tree1 in the lhs
+QTreeMultiplyDeconsVal2(r, op_add, op_mul, size, val2) >< QTreeLeaf(val1) =>
+  op_mul ~ (multiplied, (val1, val2)),
+  rval << MultScalar(op_add, multiplied, size),
+  r ~ QTreeLeaf(rval);
+QTreeMultiplyDeconsVal2(r, op_add, op_mul, size, val2) >< QTreeNode(nw, ne, sw, se) =>
+  val2 ~ Dup4(val2_1, val2_2, val2_3, val2_4),
+  QTreeDivided(r, op_add, op_mul, size, nw, ne, sw, se) ~
+    QTreeNode(
+      QTreeLeaf(val2_1),
+      QTreeLeaf(val2_2),
+      QTreeLeaf(val2_3),
+      QTreeLeaf(val2_4)
+    );
+
+
+// Helper function when two qtrees are already divided into nodes
+QTreeDivided(r, op_add, op_mul, size, nw1, ne1, sw1, se1) >< QTreeNode(nw2, ne2, sw2, se2) =>
+  thalfSize << Div(size, 2),
+  thalfSize ~ Dup(thalfSize1, thalfSize2),
+  thalfSize1 ~ Dup4(halfSize1, halfSize2, halfSize3, halfSize4),
+  thalfSize2 ~ Dup4(halfSize5, halfSize6, halfSize7, halfSize8),
+  op_add ~ Dup3(top_add1, top_add2, top_add3),
+  top_add1 ~ Dup4(op_add1, op_add2, op_add3, op_add4),
+  top_add2 ~ Dup4(op_add5, op_add6, op_add7, op_add8),
+  top_add3 ~ Dup4(op_add9, op_add10, op_add11, op_add12),
+  op_mul ~ Dup(top_mul1, top_mul2),
+  top_mul1 ~ Dup4(op_mul1, op_mul2, op_mul3, op_mul4),
+  top_mul2 ~ Dup4(op_mul5, op_mul6, op_mul7, op_mul8),
+
+  // Beautiful?
+  nw1 ~ Dup(nw1_1, nw1_2),
+  ne1 ~ Dup(ne1_1, ne1_2),
+  sw1 ~ Dup(sw1_1, sw1_2),
+  se1 ~ Dup(se1_1, se1_2),
+  nw2 ~ Dup(nw2_1, nw2_2),
+  ne2 ~ Dup(ne2_1, ne2_2),
+  sw2 ~ Dup(sw2_1, sw2_2),
+  se2 ~ Dup(se2_1, se2_2),
+
+  // nw1_x_nw2, ne1_x_sw2, nw1_x_ne2, ne1_x_se2, sw1_x_nw2, se1_x_sw2, sw1_x_ne2, se1_x_se2
+  // Double check this code
+  QTreeMultiplication(nw1_x_nw2, op_add1, op_mul1, halfSize1, nw1_1) ~ nw2_1,
+  QTreeMultiplication(ne1_x_sw2, op_add2, op_mul2, halfSize2, ne1_1) ~ sw2_1,
+  QTreeMultiplication(nw1_x_ne2, op_add3, op_mul3, halfSize3, nw1_2) ~ ne2_1,
+  QTreeMultiplication(ne1_x_se2, op_add4, op_mul4, halfSize4, ne1_2) ~ se2_1,
+  QTreeMultiplication(sw1_x_nw2, op_add5, op_mul5, halfSize5, sw1_1) ~ nw2_2,
+  QTreeMultiplication(se1_x_sw2, op_add6, op_mul6, halfSize6, se1_1) ~ sw2_2,
+  QTreeMultiplication(sw1_x_ne2, op_add7, op_mul7, halfSize7, sw1_2) ~ ne2_2,
+  QTreeMultiplication(se1_x_se2, op_add8, op_mul8, halfSize8, se1_2) ~ se2_2,
+
+  // Adding
+  rnw << QTreeMap2(op_add9, nw1_x_nw2, ne1_x_sw2),
+  rne << QTreeMap2(op_add10, nw1_x_ne2, ne1_x_se2),
+  rsw << QTreeMap2(op_add11, sw1_x_nw2, se1_x_sw2),
+  rse << QTreeMap2(op_add12, sw1_x_ne2, se1_x_se2),
+
+  MkNode(r) ~ (rnw, rne, rsw, rse);
+
+
+QTreeDividedSwapped(r, op_add, op_mul, size, nw, ne, sw, se) >< QTreeLeaf(val1) =>
+  val1 ~ Dup4(val1_1, val1_2, val1_3, val1_4),
+  QTreeDivided(r, op_add, op_mul, size, QTreeLeaf(val1_1), QTreeLeaf(val1_2), QTreeLeaf(val1_3), QTreeLeaf(val1_4))
+    ~ QTreeNode(nw, ne, sw, se);
+
+QTreeDividedSwapped(r, op_add, op_mul, size, nw2, ne2, sw2, se2) >< QTreeNode(nw1, ne1, sw1, se1) =>
+  QTreeDivided(r, op_add, op_mul, size, nw1, ne1, sw1, se1) ~ QTreeNode(nw2, ne2, sw2, se2);
+
+QTreeMultiplication(r, op_add, op_mul, size, tree1) >< QTreeLeaf(val2) =>
+  QTreeMultiplyDeconsVal2(r, op_add, op_mul, size, val2) ~ tree1;
+QTreeMultiplication(r, op_add, op_mul, size, tree1) >< QTreeNode(nw, ne, sw, se) =>
+  QTreeDividedSwapped(r, op_add, op_mul, size, nw, ne, sw, se) ~ tree1;
