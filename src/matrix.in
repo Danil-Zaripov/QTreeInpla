@@ -1,18 +1,35 @@
 // QTreeNode(nw,ne,sw,se);
 // QTreeLeaf(val);
 
+Dup3(x1, x2, x3) >< x =>
+  Dup(t1, x1) ~ x,
+  Dup(x2, x3) ~ t1;
+
+Dup3(x1, x2, x3) >< int x =>
+  Dup(t1, x1) ~ x,
+  Dup(x2, x3) ~ t1;
+
+Dup4(x1, x2, x3, x4) >< x =>
+  Dup(t1, t2) ~ x,
+  Dup(x1, x2) ~ t1,
+  Dup(x3, x4) ~ t2;
+
+// Attributes are "different"
+Dup4(x1, x2, x3, x4) >< int x =>
+  Dup(t1, t2) ~ x,
+  Dup(x1, x2) ~ t1,
+  Dup(x3, x4) ~ t2;
+
 sum(ret, size) >< QTreeNode(nw,ne,sw,se) => 
   Add(ret, lhsret)~rhsret,
   Add(lhsret, nwsum)~nesum,
   Add(rhsret, swsum)~sesum,
-  halfsize << Div(size, 2),
-  Dup(thalfsize1, thalfsize2) ~ halfsize,
-  Dup(halfsize1, halfsize2) ~ thalfsize1,
-  Dup(halfsize3, halfsize4) ~ thalfsize2,
-  sum(nwsum, halfsize1)~nw,
-  sum(nesum, halfsize2)~ne,
-  sum(swsum, halfsize3)~sw,
-  sum(sesum, halfsize4)~se;
+  halfSize << Div(size, 2),
+  Dup4(halfSize1, halfSize2, halfSize3, halfSize4) ~ halfSize,
+  sum(nwsum, halfSize1)~nw,
+  sum(nesum, halfSize2)~ne,
+  sum(swsum, halfSize3)~sw,
+  sum(sesum, halfSize4)~se;
 
 sum(ret, size) >< QTreeLeaf(val) =>
   Mul(ret, val)~area,
@@ -20,9 +37,8 @@ sum(ret, size) >< QTreeLeaf(val) =>
   Dup(size1, size2)~size;
 
 
-
-If(r, true_branch, false_branch) >< True => r~true_branch, Eraser~false_branch;
-If(r, true_branch, false_branch) >< False => r~false_branch, Eraser~true_branch;
+If(r, true_branch, false_branch) >< True => Eraser ~ false_branch, r ~ true_branch;
+If(r, true_branch, false_branch) >< False => Eraser ~ true_branch, r ~ false_branch;
 
 IsZero(r) >< Z => r~True;
 IsZero(r) >< int x 
@@ -83,16 +99,60 @@ MkNode(r, nw, ne, sw) >< se =>
   Eq4(areEqual, nw1, ne1, sw1) ~ se1,
   If(r, nw3, QTreeNode(nw2, ne2, sw2, se2)) ~ areEqual;
 
-
-// QTreeMap2(r, f, QTreeNode(nw1, ne1, sw1, se1)) >< (QTreeNode(nw2, ne2, sw2, se2)) =>
-//   Dup(_f1, _f2)~f,
-//   Dup(f1, f2)~_f1,
-//   Dup(f3, f4)~_f2,
-//   QTreeMap2(nw, f1)~(nw1, nw2),
-//   QTreeMap2(ne, f2)~(ne1, ne2),
-//   QTreeMap2(sw, f3)~(sw1, sw2),
-//   QTreeMap2(se, f4)~(se1, se2),
-//   r~MkNode(nw, ne, sw, se);
+QTreeIsLeaf(r) >< QTreeLeaf(val) => Eraser ~ val, r ~ True;
+QTreeIsLeaf(r) >< QTreeNode(nw, ne, sw, se) => Eraser ~ (nw, ne, sw, se), r ~ False;
 
 
+// TODO: Rename
+// This *function* gets called with val2 qtree
+// already deconstructed so they are swapped
+QTreeMap2Leafs(r, f, val2) >< QTreeLeaf(val1) => 
+  f ~ (w, (val1, val2)),
+  r ~ QTreeLeaf(w);
+QTreeMap2Leafs(r, f, val2) >< QTreeNode(nw, ne, sw, se) =>
+  MkNode(r, rnw, rne, rsw) ~ rse,
+  val2 ~ Dup4(val2_1, val2_2, val2_3, val2_4),
+  f ~ Dup4(f1, f2, f3, f4),
+  QTreeMap2Leafs(rnw, f1, val2_1) ~ nw,
+  QTreeMap2Leafs(rne, f2, val2_2) ~ ne,
+  QTreeMap2Leafs(rsw, f3, val2_3) ~ sw,
+  QTreeMap2Leafs(rse, f4, val2_4) ~ se;
 
+// To preserve generality(absence of commutativity)
+// We need two functions at the same time
+QTreeMap2LeafsSwapped(r, f, val1) >< QTreeLeaf(val2) => 
+  f ~ (w, (val1, val2)),
+  r ~ QTreeLeaf(w);
+
+// Todo: rename val2 with val1
+QTreeMap2Leafs(r, f, val2) >< QTreeNode(nw, ne, sw, se) =>
+  MkNode(r, rnw, rne, rsw) ~ rse,
+  val2 ~ Dup4(val2_1, val2_2, val2_3, val2_4),
+  f ~ Dup4(f1, f2, f3, f4),
+  QTreeMap2Leafs(rnw, f1, val2_1) ~ nw,
+  QTreeMap2Leafs(rne, f2, val2_2) ~ ne,
+  QTreeMap2Leafs(rsw, f3, val2_3) ~ sw,
+  QTreeMap2Leafs(rse, f4, val2_4) ~ se;
+
+QTreeMap2Nodes(r, f, nw, ne, sw, se) >< QTreeLeaf(val1) =>
+  MkNode(r, rnw, rne, rsw) ~ rse,
+  val1 ~ Dup4(val1_1, val1_2, val1_3, val1_4),
+  f ~ Dup4(f1, f2, f3, f4),
+  QTreeMap2LeafsSwapped(rnw, f1, val1_1) ~ nw,
+  QTreeMap2LeafsSwapped(rne, f2, val1_2) ~ ne,
+  QTreeMap2LeafsSwapped(rsw, f3, val1_3) ~ sw,
+  QTreeMap2LeafsSwapped(rse, f4, val1_4) ~ se;
+
+QTreeMap2Nodes(r, f, nw2, ne2, sw2, se2) >< QTreeNode(nw1, ne1, sw1, se1) =>
+  MkNode(r, rnw, rne, rsw) ~ rse,
+  f ~ Dup4(f1, f2, f3, f4),
+  QTreeMap2(rnw, f1, nw1) ~ nw2,
+  QTreeMap2(rne, f2, ne1) ~ ne2,
+  QTreeMap2(rsw, f3, sw1) ~ sw2,
+  QTreeMap2(rse, f4, se1) ~ se2;
+
+QTreeMap2(r, f, tree1) >< QTreeLeaf(int val) => 
+  QTreeMap2Leafs(r, f, val) ~ tree1;
+
+QTreeMap2(r, f, tree1) >< QTreeNode(nw, ne, sw, se) => 
+  QTreeMap2Nodes(r, f, nw, ne, sw, se) ~ tree1;
