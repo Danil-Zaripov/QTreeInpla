@@ -1,0 +1,35 @@
+
+eq_2(r, y) >< x => r ~ False, Eraser ~ x, Eraser ~ y;
+
+eq_2(r, int y) >< (int x) 
+  | x == y => r ~ True
+  | _ => r ~ False;
+
+eq_1(r, x) >< int y =>
+  eq_2(r, y) ~ x;
+
+// Don't compare anything else
+eq_1(r, x) >< y =>
+  r ~ False,
+  Eraser ~ x,
+  Eraser ~ y;
+
+eq_1(r, x) >< QTreeLeaf(y) =>
+  Eq(r) ~ (y, x);
+
+Eq(r) >< (x, y) => 
+  eq_1(r, x) ~ y;
+
+
+
+and_1(r, a) >< False => r ~ False, Eraser ~ a;
+
+and_1(r, a) >< True =>
+  r ~ a;
+
+And(r) >< (a, b) => and_1(r, a) ~ b;
+
+And3(r) >< (a, b, c) =>
+  And(ab) ~ (a, b),
+  And(r) ~ (ab, c);
+

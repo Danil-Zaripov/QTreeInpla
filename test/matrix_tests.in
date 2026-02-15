@@ -25,15 +25,14 @@ sum(r, 4)~QTreeNode(
 
 r; free r;
 
-Eq(r, QTreeLeaf(3))~QTreeLeaf(3);
-r; free r;
-
-
-Eq4(r, QTreeLeaf(3), QTreeLeaf(3), QTreeLeaf(3)) ~ QTreeLeaf(3);
+Eq(r)~(QTreeLeaf(3), QTreeLeaf(3));
 r; free r;
 
 
 MkNode(r) ~ (QTreeLeaf(3), QTreeLeaf(3), QTreeLeaf(3), QTreeLeaf(3));
+r; free r;
+
+MkNode(r) ~ (QTreeNode(QTreeLeaf(1), QTreeLeaf(2), QTreeLeaf(3), QTreeLeaf(4)), QTreeLeaf(5), QTreeLeaf(6), QTreeLeaf(7));
 r; free r;
 
 MkNode(tree1) ~ (QTreeLeaf(1), QTreeLeaf(2), QTreeLeaf(3), QTreeLeaf(4));
