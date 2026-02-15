@@ -48,3 +48,9 @@ MkNode(tree2) ~ (QTreeLeaf(1), QTreeLeaf(2), QTreeLeaf(3), QTreeLeaf(4));
 
 QTreeMap2(r, %op_add, tree1) ~ tree2;
 r; free r tree1 tree2 op_add;
+
+
+coo ~ [(0, 0, 1)];
+FromCoordinateList(r, 4) ~ coo;
+r; free r coo;
+

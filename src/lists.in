@@ -1,24 +1,14 @@
-length(r) >< [] => r~0;
-length(r) >< x:xs =>
-  Eraser~x,
-  xs~length(cnt),
-  r << Add(cnt, 1);
 
-listZip(r, xs) >< ys =>
-  listZipW(r, xs)~ys;
+filterAppliedPredicate(r, predicate, x, xs) >< True => r ~ x:ws,
+  ListFilter(ws, predicate) ~ xs;
+filterAppliedPredicate(r, predicate, x, xs) >< False => r ~ ws, x ~ Eraser,
+  ListFilter(ws, predicate) ~ xs;
 
-listZipW(r, xs) >< [] => r~[], Eraser~xs;
-listZipW(r, xxs) >< y:ys =>
-  r~(wx, wy):ws,
-  (wx, wy, rys)~w,
-  deconsZip(w, xs, ys, y)~xxs,
-  listZipW(ws, xs)~rys;
 
-deconsZip(r, rxs, ys, y) >< [] =>
-  rxs~[],
-  Eraser~ys,
-  r~(y, []);
-deconsZip(r, rxs, ys, y) >< x:xs =>
-  rxs~xs,
-  r~(x,y, ys);
-
+// %predicate !
+ListFilter(r, predicate) >< [] => r ~ [], predicate ~ Eraser;
+ListFilter(r, predicate) >< x:xs =>
+  x ~ Dup(x1, x2),
+  predicate ~ Dup(predicate1, predicate2),
+  predicate1 ~ (isTrue, x1),
+  filterAppliedPredicate(r, predicate2, x2, xs) ~ isTrue;

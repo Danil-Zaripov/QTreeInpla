@@ -1,7 +1,7 @@
 
 eq_2(r, y) >< x => r ~ False, Eraser ~ x, Eraser ~ y;
 
-eq_2(r, int y) >< (int x) 
+eq_2(r, int y) >< (int x)
   | x == y => r ~ True
   | _ => r ~ False;
 
@@ -17,7 +17,7 @@ eq_1(r, x) >< y =>
 eq_1(r, x) >< QTreeLeaf(y) =>
   Eq(r) ~ (y, x);
 
-Eq(r) >< (x, y) => 
+Eq(r) >< (x, y) =>
   eq_1(r, x) ~ y;
 
 
@@ -33,3 +33,32 @@ And3(r) >< (a, b, c) =>
   And(ab) ~ (a, b),
   And(r) ~ (ab, c);
 
+And4(r) >< (a, b, c, d) =>
+  And(ab) ~ (a, b),
+  And(cd) ~ (c, d),
+  And(r) ~ (ab, cd);
+
+less_2(r, y) >< x => r ~ False, (y, x) ~ Eraser;
+
+less_2(r, int y) >< int x
+  | x < y => r ~ True
+  | _ => r ~ False;
+
+less_1(r, x) >< y => r ~ False, (x, y) ~ Eraser;
+
+less_1(r, x) >< int y =>
+  less_2(r, y) ~ x;
+
+Less(r) >< (x,y) => less_1(r, x) ~ y;
+
+leq_2(r, y) >< x => r ~ False, (y, x) ~ Eraser;
+
+leq_2(r, int y) >< int x
+  | x <= y => r ~ True
+  | _ => r ~ False;
+
+leq_1(r,x) >< y => r ~ False, (x, y) ~ Eraser;
+leq_1(r, x) >< int y =>
+  leq_2(r, y) ~ x;
+
+Leq(r) >< (x, y) => leq_1(r, x) ~ y;

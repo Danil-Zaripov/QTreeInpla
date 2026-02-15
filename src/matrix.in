@@ -1,7 +1,9 @@
 // QTreeNode(nw,ne,sw,se);
 // QTreeLeaf(val);
+// TODO: rewrite assuming QTrees use None/Some(x)
 
 use "./src/equalities.in";
+use "./src/lists.in";
 
 Dup3(x1, x2, x3) >< x =>
   Dup(t1, x1) ~ x,
@@ -52,7 +54,7 @@ mkNode_1(r, nw, ne, sw, se) >< False =>
 nodeEquality(r) >< (nw, ne, sw, se) =>
   ne ~ Dup(ne1, ne2),
   sw ~ Dup(sw1, sw2),
-  
+
   (nw, ne1) ~ Eq(nw_x_ne),
   (ne2, sw1) ~ Eq(ne_x_sw),
   (sw2, se) ~ Eq(sw_x_se),
@@ -67,9 +69,8 @@ MkNode(r) >< (nw, ne, sw, se) =>
   nodeEquality(areEqual) ~ (nw1, ne1, sw1, se1),
   mkNode_1(r, nw2, ne2, sw2, se2) ~ areEqual;
 
-QTreeIsLeaf(r) >< QTreeLeaf(val) => Eraser ~ val, r ~ True;
-QTreeIsLeaf(r) >< QTreeNode(nw, ne, sw, se) => Eraser ~ (nw, ne, sw, se), r ~ False;
 
+// Map2 start
 
 // TODO: Rename
 // This *function* gets called with val2 qtree
@@ -119,8 +120,103 @@ QTreeMap2Nodes(r, f, nw2, ne2, sw2, se2) >< QTreeNode(nw1, ne1, sw1, se1) =>
   QTreeMap2(rsw, f3, sw1) ~ sw2,
   QTreeMap2(rse, f4, se1) ~ se2;
 
+
+// TODO: Use this *calling* convention:
+// F(r) ~ (arg1, arg2, ...) => f_1(r, arg1, ...) ~ argn;
+// f_1(r, arg1, ...) ~ argn_decons(...)
 QTreeMap2(r, f, tree1) >< QTreeLeaf(int val) =>
   QTreeMap2Leafs(r, f, val) ~ tree1;
 
 QTreeMap2(r, f, tree1) >< QTreeNode(nw, ne, sw, se) =>
   QTreeMap2Nodes(r, f, nw, ne, sw, se) ~ tree1;
+
+
+// Map2 end
+
+
+// Coordinate list START
+
+getQuadrantCoords(nwp, nep, swp, sep) >< (int pr, int pc, int halfSize) =>
+  (pr, pc) ~ Dup4((pr1, pc1), (pr2, pc2), (pr3, pc3), (pr4, pc4)),
+  halfSize ~ Dup4(halfSize1, halfSize2, halfSize3, halfSize4),
+
+  nwp ~ (pr1, pc1),
+
+  nepc << Add(pc2, halfSize1),
+  nep ~ (pr2, nepc),
+
+  swpr << Add(pr3, halfSize2),
+  swp ~ (swpr, pc3),
+
+  sepr << Add(pr4, halfSize3),
+  sepc << Add(pc4, halfSize4),
+  sep ~ (sepr, sepc);
+
+
+
+isEntryInCoords(r, pr, pc, size) >< (i, j, val) =>
+  Eraser ~ val,
+  i ~ Dup(i1, i2),
+  j ~ Dup(j1, j2),
+  pr ~ Dup(pr1, pr2),
+  pc ~ Dup(pc1, pc2),
+  size ~ Dup(size1, size2),
+  Leq(pr_leq_i) ~ (pr1, i1),
+  Leq(pc_leq_j) ~ (pc1, j1),
+  pr_size << Add(pr2, size1),
+  pc_size << Add(pc2, size2),
+  Less(i_less_pr_size) ~ (i2, pr_size),
+  Less(j_less_pc_size) ~ (j2, pc_size),
+  And4(r) ~ (pr_leq_i, pc_leq_j, i_less_pr_size, j_less_pc_size);
+
+
+// Bool at the end: i == pr && j == pc && size == 1
+cooTraverseDeconsBoolean(r, pr, pc, size, xs, i, j, val) >< True =>
+  r ~ QTreeLeaf(val),
+  Eraser ~ (pr, pc, size, i, j, xs);
+cooTraverseDeconsBoolean(r, pr, pc, size, xs, i, j, val) >< False =>
+    MkNode(r) ~ (rnw, rne, rsw, rse),
+    halfSize << Div(size, 2),
+    xxs ~ ((i, j, val) : xs),
+    xxs ~ Dup4(xxs1, xxs2, xxs3, xxs4),
+    halfSize ~ Dup3(halfSize1, thalfSize1, thalfSize2),
+    thalfSize1 ~ Dup4(halfSize2, halfSize3, halfSize4, halfSize5),
+    thalfSize2 ~ Dup4(halfSize6, halfSize7, halfSize8, halfSize9),
+
+    getQuadrantCoords(nwp, nep, swp, sep) ~ (pr, pc, halfSize1),
+    nwp ~ (nwpr, nwpc), nep ~ (nepr, nepc), swp ~ (swpr, swpc), sep ~ (sepr, sepc),
+
+    (nwpr, nepr, swpr, sepr) ~ Dup((nwpr1, nepr1, swpr1, sepr1), (nwpr2, nepr2, swpr2, sepr2)),
+    (nwpc, nepc, swpc, sepc) ~ Dup((nwpc1, nepc1, swpc1, sepc1), (nwpc2, nepc2, swpc2, sepc2)),
+
+    nwCoo << ListFilter((w1, isEntryInCoords(w1, nwpr1, nwpc1, halfSize2)), xxs1),
+    neCoo << ListFilter((w2, isEntryInCoords(w2, nepr1, nepc1, halfSize3)), xxs2),
+    swCoo << ListFilter((w3, isEntryInCoords(w3, swpr1, swpc1, halfSize4)), xxs3),
+    seCoo << ListFilter((w4, isEntryInCoords(w4, sepr1, sepc1, halfSize5)), xxs4),
+
+    rnw << cooTraverse(nwpr2, nwpc2, halfSize6, nwCoo),
+    rne << cooTraverse(nepr2, nepc2, halfSize7, neCoo),
+    rsw << cooTraverse(swpr2, swpc2, halfSize8, swCoo),
+    rse << cooTraverse(sepr2, sepc2, halfSize9, seCoo);
+
+
+cooTraverseDecons(r, pr, pc, size, xs) >< (i, j, val) =>
+  (i, j, pr, pc, size) ~ Dup((i1, j1, pr1, pc1, size1), (i2, j2, pr2, pc2, size2)),
+  Eq(i_pr) ~ (i1, pr1),
+  Eq(j_pc) ~ (j1, pc1),
+  Eq(size_1) ~ (size1, 1),
+  And3(place) ~ (i_pr, j_pc, size_1),
+  cooTraverseDeconsBoolean(r, pr2, pc2, size2, xs, i2, j2, val) ~ place;
+
+// Should depend on pr and pc relating to real matrix size
+// and return Leaf(Dummy) || Leaf(UserValue(None))
+cooTraverse(r, int pr, int pc, int size) >< [] =>
+  r ~ QTreeLeaf(0);
+
+cooTraverse(r, int pr, int pc, int size) >< x:xs =>
+  cooTraverseDecons(r, pr, pc, size, xs) ~ x;
+
+FromCoordinateList(r, int size) >< coo =>
+  cooTraverse(r, 0, 0, size) ~ coo;
+
+// FromCoordinateList END
