@@ -45,13 +45,13 @@ If(r, true_branch, false_branch) >< True => Eraser ~ false_branch, r ~ true_bran
 If(r, true_branch, false_branch) >< False => Eraser ~ true_branch, r ~ false_branch;
 
 
-mkNode_1(r, nw, ne, sw, se) >< True =>
+qtreemkNode_1(r, nw, ne, sw, se) >< True =>
   Eraser ~ (ne, sw, se),
   r ~ nw;
-mkNode_1(r, nw, ne, sw, se) >< False =>
+qtreemkNode_1(r, nw, ne, sw, se) >< False =>
   r ~ QTreeNode(nw, ne, sw, se);
 
-nodeEquality(r) >< (nw, ne, sw, se) =>
+qtreenodeEquality(r) >< (nw, ne, sw, se) =>
   ne ~ Dup(ne1, ne2),
   sw ~ Dup(sw1, sw2),
 
@@ -60,14 +60,14 @@ nodeEquality(r) >< (nw, ne, sw, se) =>
   (sw2, se) ~ Eq(sw_x_se),
   And3(r) ~ (nw_x_ne, ne_x_sw, sw_x_se);
 
-MkNode(r) >< (nw, ne, sw, se) =>
+QTreeMkNode(r) >< (nw, ne, sw, se) =>
   Dup(nw1, nw2) ~ nw,
   Dup(ne1, ne2) ~ ne,
   Dup(sw1, sw2) ~ sw,
   Dup(se1, se2) ~ se,
 
-  nodeEquality(areEqual) ~ (nw1, ne1, sw1, se1),
-  mkNode_1(r, nw2, ne2, sw2, se2) ~ areEqual;
+  qtreenodeEquality(areEqual) ~ (nw1, ne1, sw1, se1),
+  qtreemkNode_1(r, nw2, ne2, sw2, se2) ~ areEqual;
 
 
 // Map2 start
@@ -79,7 +79,7 @@ QTreeMap2Leafs(r, f, val2) >< QTreeLeaf(val1) =>
   f ~ (w, (val1, val2)),
   r ~ QTreeLeaf(w);
 QTreeMap2Leafs(r, f, val2) >< QTreeNode(nw, ne, sw, se) =>
-  MkNode(r) ~ (rnw, rne, rsw, rse),
+  QTreeMkNode(r) ~ (rnw, rne, rsw, rse),
   val2 ~ Dup4(val2_1, val2_2, val2_3, val2_4),
   f ~ Dup4(f1, f2, f3, f4),
   QTreeMap2Leafs(rnw, f1, val2_1) ~ nw,
@@ -95,7 +95,7 @@ QTreeMap2LeafsSwapped(r, f, val1) >< QTreeLeaf(val2) =>
 
 // Todo: rename val2 with val1
 QTreeMap2LeafsSwapped(r, f, val2) >< QTreeNode(nw, ne, sw, se) =>
-  MkNode(r) ~ (rnw, rne, rsw, rse),
+  QTreeMkNode(r) ~ (rnw, rne, rsw, rse),
   val2 ~ Dup4(val2_1, val2_2, val2_3, val2_4),
   f ~ Dup4(f1, f2, f3, f4),
   QTreeMap2Leafs(rnw, f1, val2_1) ~ nw,
@@ -104,7 +104,7 @@ QTreeMap2LeafsSwapped(r, f, val2) >< QTreeNode(nw, ne, sw, se) =>
   QTreeMap2Leafs(rse, f4, val2_4) ~ se;
 
 QTreeMap2Nodes(r, f, nw, ne, sw, se) >< QTreeLeaf(val1) =>
-  MkNode(r) ~ (rnw, rne, rsw, rse),
+  QTreeMkNode(r) ~ (rnw, rne, rsw, rse),
   val1 ~ Dup4(val1_1, val1_2, val1_3, val1_4),
   f ~ Dup4(f1, f2, f3, f4),
   QTreeMap2LeafsSwapped(rnw, f1, val1_1) ~ nw,
@@ -113,7 +113,7 @@ QTreeMap2Nodes(r, f, nw, ne, sw, se) >< QTreeLeaf(val1) =>
   QTreeMap2LeafsSwapped(rse, f4, val1_4) ~ se;
 
 QTreeMap2Nodes(r, f, nw2, ne2, sw2, se2) >< QTreeNode(nw1, ne1, sw1, se1) =>
-  MkNode(r) ~ (rnw, rne, rsw, rse),
+  QTreeMkNode(r) ~ (rnw, rne, rsw, rse),
   f ~ Dup4(f1, f2, f3, f4),
   QTreeMap2(rnw, f1, nw1) ~ nw2,
   QTreeMap2(rne, f2, ne1) ~ ne2,
@@ -175,7 +175,7 @@ cooTraverseDeconsBoolean(r, pr, pc, size, xs, i, j, val) >< True =>
   r ~ QTreeLeaf(val),
   Eraser ~ (pr, pc, size, i, j, xs);
 cooTraverseDeconsBoolean(r, pr, pc, size, xs, i, j, val) >< False =>
-    MkNode(r) ~ (rnw, rne, rsw, rse),
+    QTreeMkNode(r) ~ (rnw, rne, rsw, rse),
     halfSize << Div(size, 2),
     xxs ~ ((i, j, val) : xs),
     xxs ~ Dup4(xxs1, xxs2, xxs3, xxs4),

@@ -75,7 +75,7 @@ QTreeDivided(r, op_add, op_mul, size, nw1, ne1, sw1, se1) >< QTreeNode(nw2, ne2,
   rsw << QTreeMap2(op_add11, sw1_x_nw2, se1_x_sw2),
   rse << QTreeMap2(op_add12, sw1_x_ne2, se1_x_se2),
 
-  MkNode(r) ~ (rnw, rne, rsw, rse);
+  QTreeMkNode(r) ~ (rnw, rne, rsw, rse);
 
 
 QTreeDividedSwapped(r, op_add, op_mul, size, nw, ne, sw, se) >< QTreeLeaf(val1) =>

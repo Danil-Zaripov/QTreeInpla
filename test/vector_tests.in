@@ -1,0 +1,11 @@
+
+use "./src/vector.in";
+
+op_add(r) >< (x, y) =>
+  Add(r, x) ~ y;
+
+tree1 ~ BTreeNode(BTreeLeaf(3), BTreeLeaf(4));
+tree2 ~ BTreeLeaf(5);
+
+BTreeMap2(r) ~ (%op_add, tree1, tree2);
+r; free tree1 tree2 r;

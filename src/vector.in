@@ -1,0 +1,70 @@
+// BTreeLeaf(val)
+// BTreeNode(lhs, rhs)
+
+use "./src/equalities.in";
+
+
+// BTreeMkNode START
+
+btreemkNode_1(r, lhs, rhs) >< False => r ~ BTreeNode(lhs, rhs);
+btreemkNode_1(r, lhs, rhs) >< True =>
+  rhs ~ Eraser,
+  r ~ lhs;
+
+BTreeMkNode(r) >< (lhs, rhs) =>
+  (lhs, rhs) ~ Dup((lhs1, rhs1), (lhs2, rhs2)),
+  Eq(areEqual) ~ (lhs1, rhs1),
+  btreemkNode_1(r, lhs2, rhs2) ~ areEqual;
+
+// BTreeMkNode END
+
+// BTreeMap2 START
+
+// Here val2 and val1 are SWAPPED. See the "call" in `BTreeMap2Decons`
+BTreeMap2DeconsLeaf(r, f, val2) >< BTreeLeaf(val1) =>
+  f ~ (w, (val1, val2)),
+  r ~ BTreeLeaf(w);
+
+BTreeMap2DeconsLeaf(r, f, val2) >< BTreeNode(lhs, rhs) =>
+  BTreeMkNode(r) ~ (rlhs, rrhs),
+  f ~ Dup(f1, f2),
+  val2 ~ Dup(val2_1, val2_2),
+  BTreeMap2DeconsLeaf(rlhs, f1, val2_1) ~ lhs,
+  BTreeMap2DeconsLeaf(rrhs, f2, val2_2) ~ rhs;
+
+BTreeMap2DeconsNode(r, f, lhs2, rhs2) >< BTreeNode(lhs1, rhs1) =>
+  BTreeMkNode(r) ~ (rlhs, rrhs),
+  f ~ Dup(f1, f2),
+  BTreeMap2(rlhs) ~ (f1, lhs1, lhs2),
+  BTreeMap2(rrhs) ~ (f2, rhs1, rhs2);
+
+BTreeMap2DeconsLeafSwapped(r, f, val1) >< BTreeLeaf(val2) =>
+  f ~ (w, (val1, val2)),
+  r ~ BTreeLeaf(w);
+
+BTreeMap2DeconsLeafSwapped(r, f, val1) >< BTreeNode(lhs, rhs) =>
+  BTreeMkNode(r) ~ (rlhs, rrhs),
+  f ~ Dup(f1, f2),
+  val1 ~ Dup(val1_1, val1_2),
+  BTreeMap2DeconsLeaf(rlhs, f1, val1_1) ~ lhs,
+  BTreeMap2DeconsLeaf(rrhs, f2, val1_2) ~ rhs;
+
+BTreeMap2DeconsNode(r, f, lhs2, rhs2) >< BTreeLeaf(val1) =>
+  BTreeMkNode(r) ~ (rlhs, rrhs),
+  f ~ Dup(f1, f2),
+  val1 ~ Dup(val1_1, val1_2),
+  BTreeMap2DeconsLeafSwapped(rlhs, f1, val1_1) ~ lhs2,
+  BTreeMap2DeconsLeafSwapped(rrhs, f2, val1_2) ~ rhs2;
+
+
+BTreeMap2Decons(r, f, tree_1) >< BTreeLeaf(val2) =>
+  BTreeMap2DeconsLeaf(r, f, val2) ~ tree_1;
+
+
+BTreeMap2Decons(r, f, tree_1) >< BTreeNode(lhs2, rhs2) =>
+  BTreeMap2DeconsNode(r, f, lhs2, rhs2) ~ tree_1;
+
+BTreeMap2(r) >< (f, tree_1, tree_2) =>
+  BTreeMap2Decons(r, f, tree_1) ~ tree_2;
+
+// BTreeMap2 END
