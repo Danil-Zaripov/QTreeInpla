@@ -1,4 +1,5 @@
 use "./src/matrix.in";
+use "./src/vector.in";
 
 // op_add example:
 // op_add(r) >< (x, y) =>
@@ -17,6 +18,7 @@ MultScalar(r, op_add, x) >< int size
     op_add2 ~ (r, (v1, v2));
 
 
+// QTreeMultiplication(mxm predecessor) START
 
 // Whenever in the lhs we got QTreeLeaf(val2), and we have tree1 in the lhs
 QTreeMultiplyDeconsVal2(r, op_add, op_mul, size, val2) >< QTreeLeaf(val1) =>
@@ -90,3 +92,63 @@ QTreeMultiplication(r, op_add, op_mul, size, tree1) >< QTreeLeaf(val2) =>
   QTreeMultiplyDeconsVal2(r, op_add, op_mul, size, val2) ~ tree1;
 QTreeMultiplication(r, op_add, op_mul, size, tree1) >< QTreeNode(nw, ne, sw, se) =>
   QTreeDividedSwapped(r, op_add, op_mul, size, nw, ne, sw, se) ~ tree1;
+
+// QTreeMultiplication(mxm predecessor) END
+
+// BTreeQTreeMultiplication (vxm predecessor) BEGIN
+
+BTreeQTreeMultiplicationDeconsQLeaf(r, op_add, op_mul, size, qval) >< BTreeLeaf(bval) =>
+  MultScalar(rval, op_add, mulval) ~ size,
+  op_mul ~ (mulval, (bval, qval)),
+  r ~ BTreeLeaf(rval);
+
+BTreeQTreeMultiplicationDeconsQLeaf(r, op_add, op_mul, size, qval) >< BTreeNode(lhs, rhs) =>
+  halfSize << Div(size, 2),
+  halfSize ~ Dup(halfSize1, halfSize2),
+  qval ~ Dup(qval1, qval2),
+  op_add ~ Dup(op_add1, op_add2),
+  op_mul ~ Dup(op_mul1, op_mul2),
+  BTreeQTreeMultiplicationDeconsQLeaf(rrhs, op_add1, op_mul1, halfSize1, qval1) ~ rhs,
+  BTreeQTreeMultiplicationDeconsQLeaf(rlhs, op_add2, op_mul2, halfSize2, qval2) ~ lhs,
+  BTreeMkNode(r) ~ (rlhs, rrhs);
+
+BTreeQTreeMultiplicationDeconsQNode(r, op_add, op_mul, size, nw, ne, sw, se) >< BTreeLeaf(bval) =>
+  bval ~ Dup(bval1, bval2),
+  BTreeQTreeMultiplicationDeconsQNode(r, op_add, op_mul, size, nw, ne, sw, se)
+    ~ BTreeNode(
+      BTreeLeaf(bval1),
+      BTreeLeaf(bval2)
+    );
+
+BTreeQTreeMultiplicationDeconsQNode(r, op_add, op_mul, size, nw, ne, sw, se) >< BTreeNode(lhs, rhs) =>
+  halfSize << Div(size, 2),
+  halfSize ~ Dup4(halfSize1, halfSize2, halfSize3, halfSize4),
+  op_add ~ Dup(top_add1, top_add2),
+  top_add1 ~ Dup4(op_add1, op_add2, op_add3, op_add4),
+  top_add2 ~ Dup(op_add5, op_add6),
+  op_mul ~ Dup4(op_mul1, op_mul2, op_mul3, op_mul4),
+
+  (lhs, rhs) ~ Dup((lhs1, rhs1), (lhs2, rhs2)),
+
+  // lhs_x_nw, lhs_x_ne, rhs_x_sw, rhs_x_se
+  BTreeQTreeMultiplication(lhs_x_nw) ~ (op_add1, op_mul1, halfSize1, lhs1, nw),
+  BTreeQTreeMultiplication(lhs_x_ne) ~ (op_add2, op_mul2, halfSize2, lhs2, ne),
+  BTreeQTreeMultiplication(rhs_x_sw) ~ (op_add3, op_mul3, halfSize3, rhs1, sw),
+  BTreeQTreeMultiplication(rhs_x_se) ~ (op_add4, op_mul4, halfSize4, rhs2, se),
+
+  // Adding lhs_x_nw + rhs_x_sw, lhs_x_ne + rhs_x_se
+  BTreeMap2(rlhs) ~ (op_add5, lhs_x_nw, rhs_x_sw),
+  BTreeMap2(rrhs) ~ (op_add6, lhs_x_ne, rhs_x_se),
+
+  BTreeMkNode(r) ~ (rlhs, rrhs);
+
+BTreeQTreeMultiplicationDecons(r, op_add, op_mul, size, vtree) >< QTreeLeaf(qval) =>
+  BTreeQTreeMultiplicationDeconsQLeaf(r, op_add, op_mul, size, qval) ~ vtree;
+
+BTreeQTreeMultiplicationDecons(r, op_add, op_mul, size, vtree) >< QTreeNode(nw, ne, sw, se) =>
+  BTreeQTreeMultiplicationDeconsQNode(r, op_add, op_mul, size, nw, ne, sw, se) ~ vtree;
+
+BTreeQTreeMultiplication(r) >< (op_add, op_mul, size, vtree, qtree) =>
+  r << BTreeQTreeMultiplicationDecons(op_add, op_mul, size, vtree, qtree);
+
+// BTreeQTreeMultiplication (vxm predecessor) END

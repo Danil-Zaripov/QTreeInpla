@@ -106,3 +106,17 @@ tree2 ~ QTreeNode(
 
 QTreeMultiplication(r, %op_add, %op_mul, 4, tree1) ~ tree2;
 r; free r tree1 tree2;
+
+// vxm
+
+qtree ~ QTreeNode(
+  QTreeNode(QTreeLeaf(0), QTreeLeaf(1), QTreeLeaf(3), QTreeLeaf(2)),
+  QTreeNode(QTreeLeaf(1), QTreeLeaf(0), QTreeLeaf(2), QTreeLeaf(3)),
+  QTreeLeaf(0),
+  QTreeNode(QTreeLeaf(1), QTreeLeaf(2), QTreeLeaf(3), QTreeLeaf(0))
+);
+
+btree ~ BTreeLeaf(2);
+
+BTreeQTreeMultiplication(r) ~ (%op_add, %op_mul, 4, btree, qtree);
+r; free qtree btree r;

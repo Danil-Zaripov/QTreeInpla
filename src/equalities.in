@@ -17,6 +17,9 @@ eq_1(r, x) >< y =>
 eq_1(r, x) >< QTreeLeaf(y) =>
   Eq(r) ~ (y, x);
 
+eq_1(r, x) >< BTreeLeaf(y) =>
+  Eq(r) ~ (y, x);
+
 Eq(r) >< (x, y) =>
   eq_1(r, x) ~ y;
 
