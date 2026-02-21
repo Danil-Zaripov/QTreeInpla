@@ -1,0 +1,50 @@
+name: Golden Tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  pre-commit:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Clone project
+        uses: actions/checkout@v6
+
+      - name: Install pre-commit
+        run: |
+          pipx install pre-commit
+
+      - name: Run pre-commit
+        run: |
+          pre-commit run --all-files
+
+  test:
+    runs-on: ubuntu-latest
+    needs: pre-commit
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "10.0.x"
+
+      - name: Install Inpla build dependencies
+        run: sudo apt-get update && sudo apt-get install -y gcc bison flex
+
+      - name: Clone patched Inpla
+        uses: actions/checkout@v6
+        with:
+          repository: Danil-Zaripov/inpla
+          path: inpla
+
+      - name: Compile Inpla
+        run: make -C inpla
+
+      - name: Run golden tests
+        run: dotnet fsi test.fsx -- "./inpla/inpla" --mode=compare

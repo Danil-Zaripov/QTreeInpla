@@ -53,4 +53,3 @@ r; free r tree1 tree2 op_add;
 coo ~ [(0, 0, 1)];
 FromCoordinateList(r, 4) ~ coo;
 r; free r coo;
-
