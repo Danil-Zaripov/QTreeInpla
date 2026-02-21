@@ -1,0 +1,8 @@
+40
+18
+True
+QTreeLeaf(3)
+QTreeNode(QTreeNode(QTreeLeaf(1),QTreeLeaf(2),QTreeLeaf(3),QTreeLeaf(4)),QTreeLeaf(5),QTreeLeaf(6),QTreeLeaf(7))
+QTreeNode(QTreeLeaf(2),QTreeLeaf(3),QTreeLeaf(4),QTreeLeaf(5))
+QTreeNode(QTreeLeaf(2),QTreeLeaf(4),QTreeLeaf(6),QTreeLeaf(8))
+QTreeNode(QTreeNode(QTreeLeaf(1),QTreeLeaf(0),QTreeLeaf(0),QTreeLeaf(0)),QTreeLeaf(0),QTreeLeaf(0),QTreeLeaf(0))

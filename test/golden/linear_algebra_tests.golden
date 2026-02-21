@@ -1,0 +1,5 @@
+16
+QTreeLeaf(8)
+QTreeNode(QTreeNode(QTreeLeaf(4),QTreeLeaf(5),QTreeLeaf(0),QTreeLeaf(0)),QTreeNode(QTreeLeaf(6),QTreeLeaf(0),QTreeLeaf(0),QTreeLeaf(0)),QTreeNode(QTreeLeaf(12),QTreeLeaf(15),QTreeLeaf(0),QTreeLeaf(0)),QTreeNode(QTreeLeaf(18),QTreeLeaf(0),QTreeLeaf(0),QTreeLeaf(0))) 60
+QTreeNode(QTreeNode(QTreeLeaf(1),QTreeLeaf(0),QTreeLeaf(0),QTreeLeaf(1)),QTreeLeaf(0),QTreeNode(QTreeLeaf(1),QTreeLeaf(0),QTreeLeaf(0),QTreeLeaf(1)),QTreeLeaf(0))
+BTreeNode(BTreeLeaf(6),BTreeNode(BTreeLeaf(14),BTreeLeaf(10)))
